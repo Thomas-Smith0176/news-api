@@ -1,7 +1,6 @@
 const db = require('../db/connection')
 
 exports.selectArticles = () => {
-    console.log('in model')
     return db.query(`
     SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INTEGER) AS comment_count 
     FROM articles 
@@ -10,7 +9,6 @@ exports.selectArticles = () => {
     ORDER BY articles.created_at DESC ;
     `)
     .then((response) => {
-        console.log(response.rows)
         return response.rows
     })
 };

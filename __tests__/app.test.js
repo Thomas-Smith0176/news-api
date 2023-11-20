@@ -80,6 +80,7 @@ describe('GET /api/articles', () => {
                     article_img_url: expect.any(String),
                     comment_count: expect.any(Number)
                 });
+                expect(article.hasOwnProperty('body')).toBe(false)
             });
             expect(response.body.articles).toBeSortedBy('created_at', {descending: true})
             expect(response.body.articles[0].comment_count).toBe(2)
