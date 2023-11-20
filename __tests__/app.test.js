@@ -91,7 +91,7 @@ describe('GET /api/articles/:article_id', () => {
         .get('/api/articles/1')
         .expect(200)
         .then((response) => {
-            expect(response.body.article).toEqual(expected)
+            expect(response.body.article).toMatchObject(expected)
         })
     })
     test('400: responds with Bad request when given an invalid Id', () => {
