@@ -61,6 +61,53 @@ describe("GET /api", () => {
             })
             expect(Object.keys(response.body.endpoints).length).toBe(Object.keys(endpointsActual).length)
         });
-      })
-  });
+    });
+});
+test('404: reponds with Not found when given a non existent endpoint', () => {
+    return request(app)
+    .get('/api/nonExistentEndpoint')
+    .expect(404)
+    .then((response) => {
+        expect(response.body.msg).toBe('404: Not found')
+    });
+});
+})
+
+
+describe('GET /api/articles/:article_id', () => {
+    test('200: responds with an article object corresponding to the correct ID', () => {
+        const expected = {
+            article_id: 1,
+            title: "Living in the shadow of a great man",
+            topic: "mitch",
+            author: "butter_bridge",
+            body: "I find this existence challenging",
+            created_at: '2020-07-09T20:11:00.000Z',
+            votes: 100,
+            article_img_url:
+              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          }
+        return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((response) => {
+            expect(response.body.article).toMatchObject(expected)
+        })
+    })
+    test('400: responds with Bad request when given an invalid Id', () => {
+        return request(app)
+        .get('/api/articles/banana')
+        .expect(400)
+        .then((response) => {
+            expect(response.body.msg).toBe('Bad request')
+        });
+    });
+    test('404: responds with Not found when given a non existent but valid id', () => {
+        return request(app)
+        .get('/api/articles/9999')
+        .expect(404)
+        .then((response) => {
+            expect(response.body.msg).toBe('Not found')
+        });
+    });
 });
