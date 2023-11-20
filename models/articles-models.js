@@ -5,7 +5,9 @@ exports.selectArticleById = (article_id) => {
     SELECT * FROM articles 
     WHERE article_id = $1;`, [article_id])
     .then((response) => {
-        console.log(response.rows[0])
+        if (!response.rows[0]) {
+            return Promise.reject({status: 404, msg: 'Not found'})
+        }
         return response.rows[0]
     })
 }

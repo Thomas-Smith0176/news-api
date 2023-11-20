@@ -13,5 +13,13 @@ app.get('/api/*', (req, res) => {
     return res.status(404).send({msg: '404: Not found'})
 });
 
+app.use((err, req, res, next) => {
+    if (err.code) {
+        res.status(400).send({msg: 'Bad request'})
+    };
+    if(err.status) {
+        res.status(err.status).send({msg: err.msg})
+    };
+});
 
 module.exports = app 

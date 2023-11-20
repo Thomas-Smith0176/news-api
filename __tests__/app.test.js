@@ -94,4 +94,20 @@ describe('GET /api/articles/:article_id', () => {
             expect(response.body.article).toEqual(expected)
         })
     })
-})
+    test('400: responds with Bad request when given an invalid Id', () => {
+        return request(app)
+        .get('/api/articles/banana')
+        .expect(400)
+        .then((response) => {
+            expect(response.body.msg).toBe('Bad request')
+        });
+    });
+    test('404: responds with Not found when given a non existent but valid id', () => {
+        return request(app)
+        .get('/api/articles/9999')
+        .expect(404)
+        .then((response) => {
+            expect(response.body.msg).toBe('Not found')
+        });
+    });
+});
