@@ -24,6 +24,15 @@ describe('GET /api/topics', ()=> {
                     description: expect.any(String)
                 });
             });
+            expect(response.body.topics.length).toBe(3);
         });
     });
+    test('404: reponds with Not found when given a non existent endpoint', () => {
+        return request(app)
+        .get('/api/nonExistentEndpoint')
+        .expect(404)
+        .then((response) => {
+            expect(response.body.msg).toBe('404: Not found')
+        });
+    })
 });
