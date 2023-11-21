@@ -233,3 +233,25 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("GET api/articles (topic query)", () => {
+  test("200: responds with an array of articles filtered by the given topic", () => {
+    return request(app)
+    .get('/api/articles?topic=cats')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.topic).toBe('cats')
+      })
+      expect(response.body.articles.length).toBe(1)
+    });
+  });
+  test("404: responds with not found when given an invalid query", () => {
+    return request(app)
+    .get('/api/articles?topic=1234')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
