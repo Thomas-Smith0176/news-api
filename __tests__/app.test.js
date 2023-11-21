@@ -135,6 +135,14 @@ describe("GET /api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Not found");
       });
   });
+  test("200: responds with an article object containing a comment_count property", () => {
+    return request(app)
+    .get('/api/articles/3')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.article.comment_count).toBe(2)
+    })
+  })
 });
 
 describe("GET /api/articles/:article_id/comments", () => {
