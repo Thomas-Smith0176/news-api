@@ -73,6 +73,30 @@ test('404: reponds with Not found when given a non existent endpoint', () => {
 });
 })
 
+describe('GET /api/articles', () => {
+  test('200: responds with an array of article objects sorted in descending order by date', () => {
+      return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((response) => {
+          expect(response.body.articles.length).toBe(13)
+          response.body.articles.forEach((article) => {
+              expect(article).toMatchObject({
+                  author: expect.any(String),
+                  title: expect.any(String),
+                  article_id: expect.any(Number),
+                  created_at: expect.any(String),
+                  article_img_url: expect.any(String),
+                  comment_count: expect.any(Number)
+              });
+              expect(article.hasOwnProperty('body')).toBe(false)
+          });
+          expect(response.body.articles).toBeSortedBy('created_at', {descending: true})
+          expect(response.body.articles[0].comment_count).toBe(2)
+      });
+  });
+});
+
 
 describe('GET /api/articles/:article_id', () => {
     test('200: responds with an article object corresponding to the correct ID', () => {
@@ -111,26 +135,49 @@ describe('GET /api/articles/:article_id', () => {
         });
     });
 });
-describe('GET /api/articles', () => {
-    test('200: responds with an array of article objects sorted in descending order by date', () => {
+
+describe('GET /api/articles/:article_id/comments', () => {
+    test('200: responds with all comments for an article', () => {
         return request(app)
-        .get('/api/articles')
+        .get('/api/articles/3/comments')
         .expect(200)
         .then((response) => {
-            expect(response.body.articles.length).toBe(13)
-            response.body.articles.forEach((article) => {
-                expect(article).toMatchObject({
-                    author: expect.any(String),
-                    title: expect.any(String),
-                    article_id: expect.any(Number),
+            expect(response.body.comments.length).toBe(2)
+            expect(response.body.comments).toBeSortedBy('created_at', {descending: true})
+            response.body.comments.forEach((comment) => {
+                expect(comment).toMatchObject({
+                    comment_id: expect.any(Number),
+                    votes: expect.any(Number),
                     created_at: expect.any(String),
-                    article_img_url: expect.any(String),
-                    comment_count: expect.any(Number)
+                    author: expect.any(String),
+                    body: expect.any(String),
+                    article_id: 3
                 });
-                expect(article.hasOwnProperty('body')).toBe(false)
             });
-            expect(response.body.articles).toBeSortedBy('created_at', {descending: true})
-            expect(response.body.articles[0].comment_count).toBe(2)
         });
     });
-});
+    test('400: responds with Bad request when given an invalid article_id', () => {
+        return request(app)
+        .get('/api/articles/banana/comments')
+        .expect(400)
+        .then((response) => {
+            expect(response.body.msg).toBe('Bad request')
+        });
+    });
+    test('404: responds with Not found when provided a valid article_id not corresponding to an article', () => {
+        return request(app)
+        .get('/api/articles/9999/comments')
+        .expect(404)
+        .then((response) => {
+            expect(response.body.msg).toBe('Not found')
+        });
+    });
+    test('200: responds with an empty array when given an article_id with no comments', () => {
+      return request(app)
+        .get('/api/articles/2/comments')
+        .expect(200)
+        .then((response) => {
+            expect(response.body.comments).toEqual([])
+        });
+    })
+  })
