@@ -214,6 +214,15 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(response.body.msg).toBe('Bad request')
       });
   });
+  test("400: responds with bad request when given an invalid or incomplete request body", () => {
+    return request(app)
+    .patch("/api/articles/1")
+    .send({wrongKey: 'string'})
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    })
+  })
   test("404: responds with Not found when given a valid article_id with no corresponding article", () => {
     return request(app)
       .patch("/api/articles/9999")

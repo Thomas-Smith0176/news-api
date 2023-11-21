@@ -21,10 +21,16 @@ exports.getArticle = (req, res, next) => {
 exports.patchArticle = (req, res, next) => {
     const { article_id } = req.params
     const { inc_votes } = req.body
-    return updateArticle(article_id, inc_votes)
+    if (!inc_votes) {
+        return Promise.reject({status: 400, msg: 'Bad request'})
+        .catch(next)
+    }
+    else {
+        return updateArticle(article_id, inc_votes)
     .then((article) => {
         res.status(200).send({ article })
     })
     .catch(next)
+    }
 }
 
