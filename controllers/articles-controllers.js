@@ -8,3 +8,4 @@ exports.getArticle = (req, res, next) => {
     })
     .catch(next);
 }
+

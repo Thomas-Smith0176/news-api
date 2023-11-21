@@ -12,3 +12,4 @@ exports.selectArticleById = (article_id) => {
         return response.rows[0]
     })
 }
+

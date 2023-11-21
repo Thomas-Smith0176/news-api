@@ -127,9 +127,8 @@ describe('GET /api/articles/:article_id/comments', () => {
                     created_at: expect.any(String),
                     author: expect.any(String),
                     body: expect.any(String),
-                    article_id: expect.any(Number)
+                    article_id: 3
                 });
-                expect(comment.article_id).toBe(3);
             });
         });
     });
@@ -149,4 +148,12 @@ describe('GET /api/articles/:article_id/comments', () => {
             expect(response.body.msg).toBe('Not found')
         });
     });
+    test('200: responds with an empty array when given an article_id with no comments', () => {
+      return request(app)
+        .get('/api/articles/2/comments')
+        .expect(200)
+        .then((response) => {
+            expect(response.body.comments).toEqual([])
+        });
+    })
 });
