@@ -25,3 +25,18 @@ exports.selectArticleById = (article_id) => {
     })
 }
 
+exports.updateArticle = (article_id, inc_votes) => {
+    return db.query(`
+    UPDATE articles
+    SET votes = articles.votes + $1
+    WHERE article_id = $2
+    RETURNING *;`, [inc_votes, article_id]
+    )
+    .then((response) => {
+        if (!response.rows[0]) {
+            return Promise.reject({ status: 400, msg: 'Bad request'})
+        };
+        return response.rows[0];
+    })
+}
+
