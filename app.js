@@ -25,10 +25,13 @@ app.get('/api/*', (req, res) => {
 app.post('/api/articles/:article_id/comments', postComment);
 
 app.use((err, req, res, next) => {
-    const psqlCodes = ['22P02', '23503', '42703']
-    if (psqlCodes.includes(err.code)) {
+    const psqlCodes = ['22P02', '42703']
+    if (err.code === '22P02' || err.code === '42703') {
         res.status(400).send({msg: 'Bad request'})
     };
+    if (err.code === '23503') {
+        res.status(404).send({msg: 'Not found'})
+    }
     if(err.status) {
         res.status(err.status).send({msg: err.msg})
     };

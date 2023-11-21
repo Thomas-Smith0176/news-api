@@ -22,7 +22,6 @@ exports.postComment = (req, res, next) => {
     const { article_id } = req.params
     return insertComment(body, username, Number(article_id))
     .then((comment) => {
-        console.log(comment)
         res.status(201).send({comment})
     })
     .catch(next);

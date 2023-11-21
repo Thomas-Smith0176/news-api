@@ -13,13 +13,12 @@ exports.selectCommentsByArticleId = (articleId) => {
 };
 
 exports.insertComment = (body, username, article_id,) => {
-    const created_at = new Date(Date.now())
     const query = format(`
     INSERT INTO comments
-    (body, author, article_id, votes, created_at)
+    (body, author, article_id)
     VALUES
-    ( %L, %L, %s, 0, %L )
-    RETURNING *;`, body, username, article_id, created_at)
+    ( %L, %L, %s)
+    RETURNING *;`, body, username, article_id)
     return db.query(query)
     .then((response) => {
         return response.rows[0]

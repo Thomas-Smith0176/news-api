@@ -45,9 +45,8 @@ describe("GET /api/topics", () => {
 
 describe("GET /api", () => {
   test("200: responds with an object describing all the available endpoints on your API", () => {
-    const endpointsContents = fs.readFile(`${__dirname}/../endpoints.json`);
-    return Promise.all([endpointsContents]).then((endpointsContents) => {
-      const endpointsActual = JSON.parse(endpointsContents);
+
+    const endpointsContents = require('../endpoints.json');
       return request(app)
         .get("/api")
         .expect(200)
@@ -60,10 +59,9 @@ describe("GET /api", () => {
             });
           });
           expect(Object.keys(response.body.endpoints).length).toBe(
-            Object.keys(endpointsActual).length
+            Object.keys(endpointsContents).length
           );
         });
-    });
   });
   test("404: reponds with Not found when given a non existent endpoint", () => {
     return request(app)
@@ -221,7 +219,7 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
-  test('400: responds with bad request when given a valid article_id with no corresponding article', () => {
+  test('404: responds with not found when given a valid article_id with no corresponding article', () => {
     const newComment = {
       username: "butter_bridge",
       body: "Hello there",
@@ -229,9 +227,9 @@ describe("POST /api/articles/:article_id/comments", () => {
      return request(app)
       .post("/api/articles/9999/comments")
       .send(newComment)
-      .expect(400)
+      .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
+        expect(response.body.msg).toBe("Not found");
       });
   });
 });
