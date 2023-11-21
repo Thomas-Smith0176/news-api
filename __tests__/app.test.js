@@ -73,6 +73,30 @@ test('404: reponds with Not found when given a non existent endpoint', () => {
 });
 })
 
+describe('GET /api/articles', () => {
+  test('200: responds with an array of article objects sorted in descending order by date', () => {
+      return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((response) => {
+          expect(response.body.articles.length).toBe(13)
+          response.body.articles.forEach((article) => {
+              expect(article).toMatchObject({
+                  author: expect.any(String),
+                  title: expect.any(String),
+                  article_id: expect.any(Number),
+                  created_at: expect.any(String),
+                  article_img_url: expect.any(String),
+                  comment_count: expect.any(Number)
+              });
+              expect(article.hasOwnProperty('body')).toBe(false)
+          });
+          expect(response.body.articles).toBeSortedBy('created_at', {descending: true})
+          expect(response.body.articles[0].comment_count).toBe(2)
+      });
+  });
+});
+
 
 describe('GET /api/articles/:article_id', () => {
     test('200: responds with an article object corresponding to the correct ID', () => {
@@ -156,4 +180,4 @@ describe('GET /api/articles/:article_id/comments', () => {
             expect(response.body.comments).toEqual([])
         });
     })
-});
+  })
