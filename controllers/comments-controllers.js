@@ -1,5 +1,5 @@
 const { checkTable } = require("../utils");
-const { selectCommentsByArticleId } = require("../models/comments-models");
+const { selectCommentsByArticleId, insertComment } = require("../models/comments-models");
 
 exports.getComments = (req, res, next) => {
     const { article_id } = req.params 
@@ -13,6 +13,16 @@ exports.getComments = (req, res, next) => {
     .then((resolvedPromises) => {
         const comments = resolvedPromises[0]
         res.status(200).send({ comments })
+    })
+    .catch(next);
+};
+
+exports.postComment = (req, res, next) => {
+    const { body, username } = req.body
+    const { article_id } = req.params
+    return insertComment(body, username, Number(article_id))
+    .then((comment) => {
+        res.status(201).send({comment})
     })
     .catch(next);
 };
