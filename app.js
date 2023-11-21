@@ -2,9 +2,10 @@ const express = require('express');
 const { getTopics } = require('./controllers/topics-controllers');
 const { getArticle } = require('./controllers/articles-controllers');
 const { getApis } = require('./controllers/api-controllers');
-const { getComments } = require('./controllers/comments-controllers');
+const { getComments, removeComment } = require('./controllers/comments-controllers');
 const { getArticles } = require('./controllers/articles-controllers');
 const app = express()
+app.use(express.json())
 
 app.get('/api/topics', getTopics);
 
@@ -15,6 +16,8 @@ app.get('/api', getApis);
 app.get('/api/articles', getArticles);
 
 app.get('/api/articles/:article_id/comments', getComments);
+
+app.delete('/api/comments/:comment_id', removeComment)
 
 app.get('/api/*', (req, res) => {
     return res.status(404).send({msg: '404: Not found'})
