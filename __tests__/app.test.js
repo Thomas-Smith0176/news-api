@@ -42,11 +42,11 @@ describe("GET /api/topics", () => {
       });
   });
 });
+
 describe("GET /api", () => {
   test("200: responds with an object describing all the available endpoints on your API", () => {
-    const endpointsContents = fs.readFile(`${__dirname}/../endpoints.json`);
-    return Promise.all([endpointsContents]).then((endpointsContents) => {
-      const endpointsActual = JSON.parse(endpointsContents);
+
+    const endpointsContents = require('../endpoints.json');
       return request(app)
         .get("/api")
         .expect(200)
@@ -59,10 +59,9 @@ describe("GET /api", () => {
             });
           });
           expect(Object.keys(response.body.endpoints).length).toBe(
-            Object.keys(endpointsActual).length
+            Object.keys(endpointsContents).length
           );
         });
-    });
   });
   test("404: reponds with Not found when given a non existent endpoint", () => {
     return request(app)
@@ -212,18 +211,55 @@ describe("PATCH /api/articles/:article_id", () => {
       .send({ inc_votes: 1 })
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
+        expect(response.body.msg).toBe('Bad request')
       });
   });
-  test("400: responds with Bad request when given a valid article_id with no corresponding article", () => {
+  test("404: responds with Not found when given a valid article_id with no corresponding article", () => {
     return request(app)
       .patch("/api/articles/9999")
       .send({ inc_votes: 1 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
+  });
+});
+ 
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: responds with a new posted comment", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Hello there",
+    }
+    
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        expect(response.body.comment).toMatchObject({
+          body: newComment.body,
+          author: newComment.username,
+          article_id: 2,
+          votes: 0,
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test('400: responds with Bad request when given an invalid article_id', () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Hello there",
+    }
+    return request(app)
+      .post("/api/articles/banana/comments")
+      .send(newComment)
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+  
   test("400: responds with bad request when given an invalid request body", () => {
     return request(app)
     .patch('/api/articles/1')
@@ -232,5 +268,18 @@ describe("PATCH /api/articles/:article_id", () => {
     .then((response) => {
       expect(response.body.msg).toBe("Bad request")
     });
+  });
+  test('404: responds with not found when given a valid article_id with no corresponding article', () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Hello there",
+    }
+     return request(app)
+      .post("/api/articles/9999/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
   });
 });

@@ -34,7 +34,7 @@ exports.updateArticle = (article_id, inc_votes) => {
     )
     .then((response) => {
         if (!response.rows[0]) {
-            return Promise.reject({ status: 400, msg: 'Bad request'})
+            return Promise.reject({ status: 404, msg: 'Not found'})
         };
         return response.rows[0];
     })
