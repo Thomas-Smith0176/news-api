@@ -12,8 +12,9 @@ app.get('/api/articles/:article_id', getArticle);
 
 app.get('/api', getApis);
 
-app.get('/api/articles/:article_id/comments', getComments);
 app.get('/api/articles', getArticles);
+
+app.get('/api/articles/:article_id/comments', getComments);
 
 app.get('/api/*', (req, res) => {
     return res.status(404).send({msg: '404: Not found'})
