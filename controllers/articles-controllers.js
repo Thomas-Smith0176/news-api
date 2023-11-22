@@ -2,7 +2,8 @@ const { selectArticles, updateArticle } = require("../models/articles-models")
 const { selectArticleById } = require("../models/articles-models")
 
 exports.getArticles = (req, res, next ) => {
-    return selectArticles()
+    const { topic } = req.query
+    return selectArticles(topic)
     .then((articles) => {
         res.status(200).send({articles})
     })
