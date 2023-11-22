@@ -96,5 +96,15 @@
       "votes": 0,
       "created_at": "2023-11-21T12:28:14.457Z"
     }
+  },
+  "GET /api/users": {
+    "description": "serves an array of all user objects",
+    "queries": [],
+    "exampleResponse": [
+      {
+        "username": "icellusedkars",
+        "name": "sam",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+      }]
   }
 }

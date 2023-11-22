@@ -4,6 +4,7 @@ const { getArticle, patchArticle } = require('./controllers/articles-controllers
 const { getApis } = require('./controllers/api-controllers');
 const { getComments, postComment } = require('./controllers/comments-controllers');
 const { getArticles } = require('./controllers/articles-controllers');
+const { getUsers } = require('./controllers/users-controllers');
 const app = express()
 
 app.use(express.json())
@@ -22,12 +23,13 @@ app.post('/api/articles/:article_id/comments', postComment);
 
 app.patch('/api/articles/:article_id', patchArticle);
 
+app.get('/api/users', getUsers);
+
 app.get('/api/*', (req, res) => {
     return res.status(404).send({msg: '404: Not found'})
 });
 
 app.use((err, req, res, next) => {
-    console.log(err)
     const psqlCodes = ['22P02', '42703']
     if (err.code === '22P02' || err.code === '42703') {
         res.status(400).send({msg: 'Bad request'})
