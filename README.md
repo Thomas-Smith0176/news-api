@@ -1,6 +1,6 @@
 # Tom's News API
 
-This project creates an API which processes requests to a news server containing articles, comments, and user information. This is intended to mimic the behaviour of a real world back end service for a site such as Reddit.
+This project creates an API which processes requests to a news server containing articles, comments, and user information. This is intended to mimic the behaviour of a real world back-end service for a site such as Reddit.
 
 #### Hosted at: https://toms-news-server.onrender.com/api
 
@@ -10,7 +10,7 @@ To successfully connect to the test and development databases locally, anyone wi
 
 * Ensure Node.js v17.0 or greater and Postgres v14.0 or greater are installed.
 
-* Run the command  ```` npm install ````  to install the necassary dependencies.
+* Run the command  ```` npm install ````  to install the necessary dependencies.
 
 * Set up the required environment variables by: 
     * Creating .env.development file containing the code ```` PGDATABASE=nc_news ````
