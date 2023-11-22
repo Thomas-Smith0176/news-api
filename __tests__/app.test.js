@@ -315,6 +315,16 @@ describe("GET api/articles (topic query)", () => {
   });
 });
 
+// describe("GET api/articles (sort_by and order queries)", () => {
+//   test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
+//     return request(app)
+//     .get('/api/articles?sort_by=title&&order=asc')
+//     .expect(200)
+//     .then((response) => {
+//       expect(response.body.articles).toBeSortedBy('title', {descending: false})
+//     }); 
+//   });
+// });
 
 describe('GET /api/users', () => {
   test('200: responds with an array of all user objects', () => {
