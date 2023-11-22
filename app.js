@@ -19,11 +19,11 @@ app.get('/api/articles', getArticles);
 
 app.get('/api/articles/:article_id/comments', getComments);
 
+app.get('/api/users', getUsers);
+
 app.post('/api/articles/:article_id/comments', postComment);
 
 app.patch('/api/articles/:article_id', patchArticle);
-
-app.get('/api/users', getUsers);
 
 app.get('/api/*', (req, res) => {
     return res.status(404).send({msg: '404: Not found'})
