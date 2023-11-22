@@ -185,6 +185,55 @@ describe("GET /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: increments votes on an article object and responds with the updated object", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then((response) => {
+        expect(response.body.article).toMatchObject({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: expect.any(String),
+          votes: 101,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  test("400: responds with Bad request when given an invalid article_id", () => {
+    return request(app)
+      .patch("/api/articles/banana")
+      .send({ inc_votes: 1 })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request')
+      });
+  });
+  test("400: responds with bad request when given an invalid or incomplete request body", () => {
+    return request(app)
+    .patch("/api/articles/1")
+    .send({wrongKey: 'string'})
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    })
+  })
+  test("404: responds with Not found when given a valid article_id with no corresponding article", () => {
+    return request(app)
+      .patch("/api/articles/9999")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
+  });
+});
+ 
 describe("POST /api/articles/:article_id/comments", () => {
   test("201: responds with a new posted comment", () => {
     const newComment = {
@@ -218,6 +267,16 @@ describe("POST /api/articles/:article_id/comments", () => {
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
       });
+  });
+  
+  test("400: responds with bad request when given an invalid request body", () => {
+    return request(app)
+    .patch('/api/articles/1')
+    .send({ inc_votes: 'banana'})
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad request")
+    });
   });
   test('404: responds with not found when given a valid article_id with no corresponding article', () => {
     const newComment = {
