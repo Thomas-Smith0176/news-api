@@ -315,7 +315,6 @@ describe("GET api/articles (topic query)", () => {
   });
 });
 
-
 describe('GET /api/users', () => {
   test('200: responds with an array of all user objects', () => {
     return request(app)
