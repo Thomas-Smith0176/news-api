@@ -1,15 +1,4 @@
 {
-  "GET /api": {
-    "description": "serves up a json representation of all the available endpoints of the api",
-    "queries": [],
-    "exampleResponse" : {
-      "GET /api": {
-      "description": "serves up a json representation of all the available endpoints of the api",
-      "queries": [],
-      "exampleResponse" : {}
-    }
-  }
-  },
   "GET /api/topics": {
     "description": "serves an array of all topics",
     "queries": [],
@@ -106,5 +95,14 @@
         "name": "sam",
         "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
       }]
+  },
+  "GET /api/users/:username": {
+    "description": "serves a user object corresponding to the given username",
+    "queries": [],
+    "exampleResponse": {
+      "username": "butter_bridge",
+      "name": "jonny",
+      "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+    }
   }
 }
