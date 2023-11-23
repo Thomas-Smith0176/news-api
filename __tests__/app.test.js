@@ -42,11 +42,11 @@ describe("GET /api/topics", () => {
       });
   });
 });
+
 describe("GET /api", () => {
   test("200: responds with an object describing all the available endpoints on your API", () => {
-    const endpointsContents = fs.readFile(`${__dirname}/../endpoints.json`);
-    return Promise.all([endpointsContents]).then((endpointsContents) => {
-      const endpointsActual = JSON.parse(endpointsContents);
+
+    const endpointsContents = require('../endpoints.json');
       return request(app)
         .get("/api")
         .expect(200)
@@ -59,7 +59,7 @@ describe("GET /api", () => {
             });
           });
           expect(Object.keys(response.body.endpoints).length).toBe(
-            Object.keys(endpointsActual).length
+            Object.keys(endpointsContents).length
           );
         });
     });
@@ -72,14 +72,29 @@ describe("GET /api", () => {
         expect(response.body.msg).toBe("404: Not found");
       });
   });
-});
-
+  
 describe("GET /api/articles", () => {
   test("200: responds with an array of article objects sorted in descending order by date", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then((response) => {
+        expect(response.body.articles.length).toBe(13);
+        response.body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            created_at: expect.any(String),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+          expect(article.hasOwnProperty("body")).toBe(false);
+        });
+        expect(response.body.articles).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        expect(response.body.articles[0].comment_count).toBe(2);
         expect(response.body.articles.length).toBe(13);
         response.body.articles.forEach((article) => {
           expect(article).toMatchObject({
@@ -183,6 +198,173 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then((response) => {
         expect(response.body.comments).toEqual([]);
       });
+  });
+});
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: increments votes on an article object and responds with the updated object", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then((response) => {
+        expect(response.body.article).toMatchObject({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: expect.any(String),
+          votes: 101,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
+      });
+  });
+  test("400: responds with Bad request when given an invalid article_id", () => {
+    return request(app)
+      .patch("/api/articles/banana")
+      .send({ inc_votes: 1 })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request')
+      });
+  });
+  test("400: responds with bad request when given an invalid or incomplete request body", () => {
+    return request(app)
+    .patch("/api/articles/1")
+    .send({wrongKey: 'string'})
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    })
+  })
+  test("404: responds with Not found when given a valid article_id with no corresponding article", () => {
+    return request(app)
+      .patch("/api/articles/9999")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
+  });
+});
+ 
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: responds with a new posted comment", () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Hello there",
+    }
+    
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        expect(response.body.comment).toMatchObject({
+          body: newComment.body,
+          author: newComment.username,
+          article_id: 2,
+          votes: 0,
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test('400: responds with Bad request when given an invalid article_id', () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Hello there",
+    }
+    return request(app)
+      .post("/api/articles/banana/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  
+  test("400: responds with bad request when given an invalid request body", () => {
+    return request(app)
+    .patch('/api/articles/1')
+    .send({ inc_votes: 'banana'})
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad request")
+    });
+  });
+  test('404: responds with not found when given a valid article_id with no corresponding article', () => {
+    const newComment = {
+      username: "butter_bridge",
+      body: "Hello there",
+    }
+     return request(app)
+      .post("/api/articles/9999/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      });
+  });
+});
+
+describe("GET api/articles (topic query)", () => {
+  test("200: responds with an array of articles filtered by the given topic", () => {
+    return request(app)
+    .get('/api/articles?topic=cats')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.topic).toBe('cats')
+      })
+      expect(response.body.articles.length).toBe(1)
+    });
+  });
+  test("404: responds with not found when given an invalid query", () => {
+    return request(app)
+    .get('/api/articles?topic=1234')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
+
+describe("GET api/articles (sort_by and order queries)", () => {
+  test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&&order=asc')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy('title', {descending: false})
+    }); 
+  });
+  test("400: responds with bad request when passed an invalid sort_by or order query", () => {
+    return request(app)
+    .get('/api/articles?sort_by=not_a_query&&order=asc DROP TABLE articles;')
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+});
+
+describe('GET /api/users', () => {
+  test('200: responds with an array of all user objects', () => {
+    return request(app)
+    .get('/api/users')
+    .expect(200)
+    .then((response) => {
+      response.body.users.forEach((user) => {
+        expect(user).toMatchObject({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String)
+        })
+      });
+      expect(response.body.users.length).toBe(4)
+    });
   });
 });
 

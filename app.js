@@ -1,35 +1,14 @@
 const express = require('express');
-const { getTopics } = require('./controllers/topics-controllers');
-const { getArticle } = require('./controllers/articles-controllers');
-const { getApis } = require('./controllers/api-controllers');
-const { getComments, removeComment } = require('./controllers/comments-controllers');
-const { getArticles } = require('./controllers/articles-controllers');
+const apiRouter = require('./routes/api-router');
+const { handleErrors } = require('./errors');
+
 const app = express()
 app.use(express.json())
 
-app.get('/api/topics', getTopics);
+app.use(express.json())
 
-app.get('/api/articles/:article_id', getArticle);
+app.use('/api', apiRouter)
 
-app.get('/api', getApis);
-
-app.get('/api/articles', getArticles);
-
-app.get('/api/articles/:article_id/comments', getComments);
-
-app.delete('/api/comments/:comment_id', removeComment)
-
-app.get('/api/*', (req, res) => {
-    return res.status(404).send({msg: '404: Not found'})
-});
-
-app.use((err, req, res, next) => {
-    if (err.code === '22P02') {
-        res.status(400).send({msg: 'Bad request'})
-    };
-    if(err.status) {
-        res.status(err.status).send({msg: err.msg})
-    };
-});
+app.use(handleErrors)
 
 module.exports = app 
