@@ -62,6 +62,7 @@ describe("GET /api", () => {
             Object.keys(endpointsContents).length
           );
         });
+    });
   });
   test("404: reponds with Not found when given a non existent endpoint", () => {
     return request(app)
@@ -71,14 +72,29 @@ describe("GET /api", () => {
         expect(response.body.msg).toBe("404: Not found");
       });
   });
-});
-
+  
 describe("GET /api/articles", () => {
   test("200: responds with an array of article objects sorted in descending order by date", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then((response) => {
+        expect(response.body.articles.length).toBe(13);
+        response.body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            created_at: expect.any(String),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+          expect(article.hasOwnProperty("body")).toBe(false);
+        });
+        expect(response.body.articles).toBeSortedBy("created_at", {
+          descending: true,
+        });
+        expect(response.body.articles[0].comment_count).toBe(2);
         expect(response.body.articles.length).toBe(13);
         response.body.articles.forEach((article) => {
           expect(article).toMatchObject({
@@ -311,3 +327,24 @@ describe('GET /api/users', () => {
   });
 });
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: responds with no content", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+  test("400: responds with Bad request when given an invalid comment_id", () => {
+    return request(app)
+      .delete("/api/comments/banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("404: responds with not found when given an id for a non existent comment", () => {
+    return request(app)
+      .delete("/api/comments/9999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      }); 
+  })
+});
