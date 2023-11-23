@@ -1,5 +1,5 @@
 const { checkTable } = require("../utils");
-const { selectCommentsByArticleId, deleteComment, insertComment } = require("../models/comments-models");
+const { selectCommentsByArticleId, removeComment, insertComment } = require("../models/comments-models");
 
 exports.getComments = (req, res, next) => {
     const { article_id } = req.params 
@@ -17,11 +17,11 @@ exports.getComments = (req, res, next) => {
     .catch(next);
 };
 
-exports.removeComment = (req, res, next) => {
+exports.deleteComment = (req, res, next) => {
     const { comment_id } = req.params
-    return deleteComment(comment_id)
+    return removeComment(comment_id)
     .then((comment)=> {
-        if (comment.length === 0) {
+        if (!comment) {
             return Promise.reject({status: 404, msg: 'Not found'})
         }
         res.status(204).send()
