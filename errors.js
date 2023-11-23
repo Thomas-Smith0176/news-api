@@ -1,5 +1,5 @@
-exports.handleErrors = (err, req, res, next) => {
-    const psqlCodes = ['22P02', '42703']
+exports.handleErrors = (err, req, res, next) => {   
+    const psqlCodes = ['22P02', '23502', '42601', '42703']
     if (psqlCodes.includes(err.code)) {
         res.status(400).send({msg: 'Bad request'})
     };
