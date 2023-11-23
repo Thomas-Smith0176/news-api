@@ -348,3 +348,27 @@ describe("DELETE /api/comments/:comment_id", () => {
       }); 
   })
 });
+
+
+describe('GET /api/users/:username', () => {
+  test('200: responds with a user object corresponding to the given username', () => {
+    return request(app)
+    .get('/api/users/butter_bridge')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.user).toMatchObject({
+          username: 'butter_bridge',
+          name: 'jonny',
+          avatar_url:'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg'
+        });
+    });
+  });
+  test('404: responds with not found when given a non existent username', () => {
+    return request(app)
+    .get('/api/users/northcoder')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
