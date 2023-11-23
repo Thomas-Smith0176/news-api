@@ -227,6 +227,16 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+  
+  test("400: responds with bad request when given an invalid request body", () => {
+    return request(app)
+    .patch('/api/articles/1')
+    .send({ inc_votes: 'banana'})
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad request")
+    });
+  });
   test('404: responds with not found when given a valid article_id with no corresponding article', () => {
     const newComment = {
       username: "butter_bridge",
@@ -239,6 +249,47 @@ describe("POST /api/articles/:article_id/comments", () => {
       .then((response) => {
         expect(response.body.msg).toBe("Not found");
       });
+  });
+});
+
+describe("GET api/articles (topic query)", () => {
+  test("200: responds with an array of articles filtered by the given topic", () => {
+    return request(app)
+    .get('/api/articles?topic=cats')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.topic).toBe('cats')
+      })
+      expect(response.body.articles.length).toBe(1)
+    });
+  });
+  test("404: responds with not found when given an invalid query", () => {
+    return request(app)
+    .get('/api/articles?topic=1234')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
+
+describe("GET api/articles (sort_by and order queries)", () => {
+  test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&&order=asc')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy('title', {descending: false})
+    }); 
+  });
+  test("400: responds with bad request when passed an invalid sort_by or order query", () => {
+    return request(app)
+    .get('/api/articles?sort_by=not_a_query&&order=asc DROP TABLE articles;')
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
   });
 });
 

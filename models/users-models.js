@@ -7,3 +7,5 @@ exports.selectUsers = () => {
         return response.rows
     });
 };
+
+exports.selectUser = () => {};
