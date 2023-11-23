@@ -1,5 +1,6 @@
 
 const db = require('../db/connection')
+const format = require('pg-format')
 
 exports.selectArticles = (topic, sort_by = 'created_at', order = 'desc') => {
     let queryString = ` 
@@ -65,4 +66,19 @@ exports.updateArticle = (article_id, inc_votes) => {
         return response.rows[0];
     })
 }
+
+exports.insertArticle = (author, title, body, topic, article_img_url) => {  
+    const query = format(`
+    INSERT INTO articles
+    (author, title, body, topic, article_img_url, comment_count)
+    VALUES 
+    (%L, %L, %L, %L, %L, 0)
+    RETURNING *; 
+    `, author, title, body, topic, article_img_url)
+
+    return db.query(query)
+    .then((response) => {
+        return response.rows[0]
+    });
+};
 

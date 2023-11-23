@@ -432,3 +432,62 @@ describe('PATCH /api/comments/:comment_id', () => {
     });
   });
 });
+
+describe('POST /api/articles', () => {
+  test('201: responds with a new article object added to the database', () => {
+    const newArticle = {
+      author: 'rogersop',
+      title: 'The perfect paper plane tutorial',
+      body: 'Step 1: Make a paper plane',
+      topic: 'paper',
+      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
+    }
+    return request(app)
+    .post('/api/articles')
+    .send(newArticle)
+    .expect(201)
+    .then((response) => {
+      expect(response.body.article).toMatchObject({
+          author: 'rogersop',
+          title: 'The perfect paper plane tutorial',
+          body: 'Step 1: Make a paper plane',
+          topic: 'paper',
+          article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          comment_count: expect.any(Number)
+      });
+    });
+  });
+  test('400: responds with bad request when provided an incomplete request body', () => {
+    const newArticle = {
+      author: 'rogersop',
+      body: 'Step 1: Make a paper plane',
+      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
+    }
+    return request(app)
+    .post('/api/articles')
+    .send(newArticle)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+  test('400: responds with bad request when provided a complete but invalid request body', () => {
+    const newArticle = {
+      author: 1234,
+      title: 'The perfect paper plane tutorial',
+      body: 'Step 1: Make a paper plane',
+      topic: [],
+      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
+    }
+    return request(app)
+    .post('/api/articles')
+    .send(newArticle)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  })
+});
