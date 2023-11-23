@@ -315,6 +315,25 @@ describe("GET api/articles (topic query)", () => {
   });
 });
 
+describe("GET api/articles (sort_by and order queries)", () => {
+  test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&&order=asc')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy('title', {descending: false})
+    }); 
+  });
+  test("400: responds with bad request when passed an invalid sort_by or order query", () => {
+    return request(app)
+    .get('/api/articles?sort_by=not_a_query&&order=asc DROP TABLE articles;')
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+});
+
 describe('GET /api/users', () => {
   test('200: responds with an array of all user objects', () => {
     return request(app)
