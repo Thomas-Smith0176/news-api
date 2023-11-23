@@ -2,39 +2,45 @@
 const db = require('../db/connection')
 const format = require('pg-format')
 
-exports.selectArticles = (topic, sort_by = 'created_at', order = 'desc') => {
+exports.selectArticles = (topic, sort_by = 'created_at', order = 'desc', limit = 10, p = 1) => {
     let queryString = ` 
     SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INTEGER) AS comment_count 
     FROM articles 
-    LEFT JOIN comments ON articles.article_id = comments.article_id`
-    let queries = []
+    LEFT JOIN comments ON articles.article_id = comments.article_id`;
+    let queries = [];
     
     if(topic) {
-        queries.push(topic)
+        queries.push(topic);
         queryString += `
-        WHERE topic = $1`
-    }
+        WHERE topic = $1`;
+    };
 
-    const sortByQueries = ["title", "created_at", "author", "article_id"]
+    const sortByQueries = ["title", "created_at", "author", "article_id"];
 
     if(sort_by && order) {
         if (sortByQueries.includes(sort_by) || order === 'asc' || order === 'desc') {
             queryString += `
             GROUP BY articles.article_id
-            ORDER BY articles.${sort_by} ${order} ;`
+            ORDER BY articles.${sort_by} ${order}`
         }
         else {
             return Promise.reject({status: 400, msg: 'Bad request'})
-        }
-    }
+        };
+    };
 
+    queries.push(limit);
+    const offset = (p - 1) * limit;
+    queries.push(offset);
+    queryString += `
+    LIMIT $${queries.length - 1} OFFSET $${queries.length}`;
+  
     return db.query(queryString, queries)
     .then((response) => {
         if (!response.rows[0]) {
             return Promise.reject({ status: 404, msg: 'Not found'})
         }
-        return response.rows
-    })
+        return response.rows;
+    });
 };
 
 exports.selectArticleById = (article_id) => {
@@ -46,11 +52,11 @@ exports.selectArticleById = (article_id) => {
     GROUP BY articles.article_id;`, [article_id])
     .then((response) => {
         if (!response.rows[0]) {
-            return Promise.reject({status: 404, msg: 'Not found'})
-        }
-        return response.rows[0]
-    })
-}
+            return Promise.reject({status: 404, msg: 'Not found'});
+        };
+        return response.rows[0];
+    });
+};
 
 exports.updateArticle = (article_id, inc_votes) => {
     return db.query(`
@@ -64,8 +70,8 @@ exports.updateArticle = (article_id, inc_votes) => {
             return Promise.reject({ status: 404, msg: 'Not found'})
         };
         return response.rows[0];
-    })
-}
+    });
+};
 
 exports.insertArticle = (author, title, body, topic, article_img_url) => {  
     const query = format(`
@@ -74,11 +80,11 @@ exports.insertArticle = (author, title, body, topic, article_img_url) => {
     VALUES 
     (%L, %L, %L, %L, %L, 0)
     RETURNING *; 
-    `, author, title, body, topic, article_img_url)
+    `, author, title, body, topic, article_img_url);
 
     return db.query(query)
     .then((response) => {
-        return response.rows[0]
+        return response.rows[0];
     });
 };
 
