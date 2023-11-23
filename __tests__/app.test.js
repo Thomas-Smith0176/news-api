@@ -9,6 +9,7 @@ const {
   topicData,
   userData,
 } = require("../db/data/test-data");
+const { totalEntries } = require("../utils");
 
 afterAll(() => {
   return db.end();
@@ -63,14 +64,14 @@ describe("GET /api", () => {
           );
         });
     });
-  });
-  test("404: reponds with Not found when given a non existent endpoint", () => {
-    return request(app)
-      .get("/api/nonExistentEndpoint")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe("404: Not found");
-      });
+    test("404: reponds with Not found when given a non existent endpoint", () => {
+      return request(app)
+        .get("/api/nonExistentEndpoint")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("404: Not found");
+        });
+    });
   });
   
 describe("GET /api/articles", () => {
@@ -79,23 +80,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles")
       .expect(200)
       .then((response) => {
-        expect(response.body.articles.length).toBe(13);
-        response.body.articles.forEach((article) => {
-          expect(article).toMatchObject({
-            author: expect.any(String),
-            title: expect.any(String),
-            article_id: expect.any(Number),
-            created_at: expect.any(String),
-            article_img_url: expect.any(String),
-            comment_count: expect.any(Number),
-          });
-          expect(article.hasOwnProperty("body")).toBe(false);
-        });
-        expect(response.body.articles).toBeSortedBy("created_at", {
-          descending: true,
-        });
-        expect(response.body.articles[0].comment_count).toBe(2);
-        expect(response.body.articles.length).toBe(13);
+        expect(response.body.articles.length).toBe(10);
         response.body.articles.forEach((article) => {
           expect(article).toMatchObject({
             author: expect.any(String),
@@ -113,6 +98,128 @@ describe("GET /api/articles", () => {
         expect(response.body.articles[0].comment_count).toBe(2);
       });
   });
+});
+
+describe("GET api/articles (topic query)", () => {
+  test("200: responds with an array of articles filtered by the given topic", () => {
+    return request(app)
+    .get('/api/articles?topic=cats')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.topic).toBe('cats')
+      })
+      expect(response.body.articles.length).toBe(1)
+    });
+  });
+  test("404: responds with not found when given an invalid query", () => {
+    return request(app)
+    .get('/api/articles?topic=1234')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
+
+describe("GET /api/articles (sort_by and order queries)", () => {
+  test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&&order=asc')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles).toBeSortedBy('title', {descending: false})
+    }); 
+  });
+  test("400: responds with bad request when passed an invalid sort_by or order query", () => {
+    return request(app)
+    .get('/api/articles?sort_by=not_a_query&&order=asc DROP TABLE articles;')
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+});
+
+describe("GET /api/articles (pagination)", () => {
+  test("200: responds with an array of articles of length equal to the given limit, offset by the page number", () => {
+    return request(app)
+    .get("/api/articles?limit=5&&p=2")
+    .expect(200)
+    .then((response) => {
+      expect(response.body.articles.length).toBe(5)
+      expect(response.body.total_count).toBe(13)
+      expect(response.body.articles[0].article_id).toBe(5)
+      expect(response.body.articles[4].article_id).toBe(4)
+    });
+  });
+  test("400: responds with bad request when provided an invalid limit or page query", () => {
+    return request(app)
+    .get("/api/articles?limit=hello&&p=world")
+    .expect(400)
+    .then((respnse) => {
+      expect(respnse.body.msg).toBe('Bad request');
+    });
+  });
+});
+
+describe('POST /api/articles', () => {
+  test('201: responds with a new article object added to the database', () => {
+    const newArticle = {
+      author: 'rogersop',
+      title: 'The perfect paper plane tutorial',
+      body: 'Step 1: Make a paper plane',
+      topic: 'paper',
+      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
+    }
+    return request(app)
+    .post('/api/articles')
+    .send(newArticle)
+    .expect(201)
+    .then((response) => {
+      expect(response.body.article).toMatchObject({
+          author: 'rogersop',
+          title: 'The perfect paper plane tutorial',
+          body: 'Step 1: Make a paper plane',
+          topic: 'paper',
+          article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032",
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          comment_count: expect.any(Number)
+      });
+    });
+  });
+  test('400: responds with bad request when provided an incomplete request body', () => {
+    const newArticle = {
+      author: 'rogersop',
+      body: 'Step 1: Make a paper plane',
+      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
+    }
+    return request(app)
+    .post('/api/articles')
+    .send(newArticle)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+  test('400: responds with bad request when provided a complete but invalid request body', () => {
+    const newArticle = {
+      author: 1234,
+      title: 'The perfect paper plane tutorial',
+      body: 'Step 1: Make a paper plane',
+      topic: [],
+      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
+    }
+    return request(app)
+    .post('/api/articles')
+    .send(newArticle)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  })
 });
 
 describe("GET /api/articles/:article_id", () => {
@@ -268,47 +375,6 @@ describe("POST /api/articles/:article_id/comments", () => {
   });
 });
 
-describe("GET api/articles (topic query)", () => {
-  test("200: responds with an array of articles filtered by the given topic", () => {
-    return request(app)
-    .get('/api/articles?topic=cats')
-    .expect(200)
-    .then((response) => {
-      response.body.articles.forEach((article) => {
-        expect(article.topic).toBe('cats')
-      })
-      expect(response.body.articles.length).toBe(1)
-    });
-  });
-  test("404: responds with not found when given an invalid query", () => {
-    return request(app)
-    .get('/api/articles?topic=1234')
-    .expect(404)
-    .then((response) => {
-      expect(response.body.msg).toBe('Not found')
-    });
-  });
-});
-
-describe("GET api/articles (sort_by and order queries)", () => {
-  test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
-    return request(app)
-    .get('/api/articles?sort_by=title&&order=asc')
-    .expect(200)
-    .then((response) => {
-      expect(response.body.articles).toBeSortedBy('title', {descending: false})
-    }); 
-  });
-  test("400: responds with bad request when passed an invalid sort_by or order query", () => {
-    return request(app)
-    .get('/api/articles?sort_by=not_a_query&&order=asc DROP TABLE articles;')
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe('Bad request')
-    });
-  });
-});
-
 describe('GET /api/users', () => {
   test('200: responds with an array of all user objects', () => {
     return request(app)
@@ -323,6 +389,29 @@ describe('GET /api/users', () => {
         })
       });
       expect(response.body.users.length).toBe(4)
+    });
+  });
+});
+
+describe('GET /api/users/:username', () => {
+  test('200: responds with a user object corresponding to the given username', () => {
+    return request(app)
+    .get('/api/users/butter_bridge')
+    .expect(200)
+    .then((response) => {
+      expect(response.body.user).toMatchObject({
+          username: 'butter_bridge',
+          name: 'jonny',
+          avatar_url:'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg'
+        });
+    });
+  });
+  test('404: responds with not found when given a non existent username', () => {
+    return request(app)
+    .get('/api/users/northcoder')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
     });
   });
 });
@@ -347,29 +436,6 @@ describe("DELETE /api/comments/:comment_id", () => {
         expect(response.body.msg).toBe("Not found");
       }); 
   })
-});
-
-describe('GET /api/users/:username', () => {
-  test('200: responds with a user object corresponding to the given username', () => {
-    return request(app)
-    .get('/api/users/butter_bridge')
-    .expect(200)
-    .then((response) => {
-      expect(response.body.user).toMatchObject({
-          username: 'butter_bridge',
-          name: 'jonny',
-          avatar_url:'https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg'
-        });
-    });
-  });
-  test('404: responds with not found when given a non existent username', () => {
-    return request(app)
-    .get('/api/users/northcoder')
-    .expect(404)
-    .then((response) => {
-      expect(response.body.msg).toBe('Not found')
-    });
-  });
 });
 
 describe('PATCH /api/comments/:comment_id', () => {
@@ -433,61 +499,4 @@ describe('PATCH /api/comments/:comment_id', () => {
   });
 });
 
-describe('POST /api/articles', () => {
-  test('201: responds with a new article object added to the database', () => {
-    const newArticle = {
-      author: 'rogersop',
-      title: 'The perfect paper plane tutorial',
-      body: 'Step 1: Make a paper plane',
-      topic: 'paper',
-      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
-    }
-    return request(app)
-    .post('/api/articles')
-    .send(newArticle)
-    .expect(201)
-    .then((response) => {
-      expect(response.body.article).toMatchObject({
-          author: 'rogersop',
-          title: 'The perfect paper plane tutorial',
-          body: 'Step 1: Make a paper plane',
-          topic: 'paper',
-          article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032",
-          article_id: expect.any(Number),
-          votes: expect.any(Number),
-          created_at: expect.any(String),
-          comment_count: expect.any(Number)
-      });
-    });
-  });
-  test('400: responds with bad request when provided an incomplete request body', () => {
-    const newArticle = {
-      author: 'rogersop',
-      body: 'Step 1: Make a paper plane',
-      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
-    }
-    return request(app)
-    .post('/api/articles')
-    .send(newArticle)
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe('Bad request')
-    });
-  });
-  test('400: responds with bad request when provided a complete but invalid request body', () => {
-    const newArticle = {
-      author: 1234,
-      title: 'The perfect paper plane tutorial',
-      body: 'Step 1: Make a paper plane',
-      topic: [],
-      article_img_url: "https://i.scdn.co/image/ab67616d0000b2734f3fc8ea510be941de66f032"
-    }
-    return request(app)
-    .post('/api/articles')
-    .send(newArticle)
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe('Bad request')
-    });
-  })
-});
+

@@ -12,3 +12,11 @@ exports.checkTable = (table, column, value) => {
         }
     })
 }
+
+exports.totalEntries = (table) => {
+    const query = format(`SELECT * FROM %I`, table)
+    return db.query(query)
+    .then((response) => {
+        return response.rows.length
+    });
+};

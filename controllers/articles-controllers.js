@@ -1,11 +1,16 @@
 const { selectArticles, updateArticle, insertArticle } = require("../models/articles-models")
 const { selectArticleById } = require("../models/articles-models")
+const { totalEntries } = require("../utils")
 
 exports.getArticles = (req, res, next ) => {
-    const { topic, sort_by, order } = req.query
-    return selectArticles(topic, sort_by, order)
-    .then((articles) => {
-        res.status(200).send({articles})
+    const { topic, sort_by, order, limit, p } = req.query
+    const promises = []
+    promises.push(selectArticles(topic, sort_by, order, limit, p))
+    promises.push(totalEntries('articles'))
+
+    Promise.all(promises)
+    .then(([articles, total_count]) => {
+        res.status(200).send({articles, total_count})
     })
     .catch(next)
 }
