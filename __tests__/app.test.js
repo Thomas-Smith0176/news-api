@@ -380,4 +380,12 @@ describe("DELETE /api/comments/:comment_id", () => {
         expect(response.body.msg).toBe("Bad request");
       });
   });
+  test("404: responds with not found when given an id for a non existent comment", () => {
+    return request(app)
+      .delete("/api/comments/9999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      }); 
+  })
 });

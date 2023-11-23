@@ -20,8 +20,11 @@ exports.getComments = (req, res, next) => {
 exports.removeComment = (req, res, next) => {
     const { comment_id } = req.params
     return deleteComment(comment_id)
-    .then(()=> {
-        res.status(204).send({})
+    .then((comment)=> {
+        if (comment.length === 0) {
+            return Promise.reject({status: 404, msg: 'Not found'})
+        }
+        res.status(204).send()
     })
     .catch(next)
 }
