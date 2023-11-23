@@ -1,5 +1,5 @@
 const { checkTable } = require("../utils");
-const { selectCommentsByArticleId, removeComment, insertComment } = require("../models/comments-models");
+const { selectCommentsByArticleId, removeComment, insertComment, updateComment } = require("../models/comments-models");
 
 exports.getComments = (req, res, next) => {
     const { article_id } = req.params 
@@ -36,4 +36,23 @@ exports.postComment = (req, res, next) => {
         res.status(201).send({comment})
     })
     .catch(next);
+};
+
+exports.patchComment = (req, res, next) => {
+    const { comment_id } = req.params
+    const { inc_votes } = req.body
+    if (!inc_votes) {
+        return Promise.reject({ status: 400, msg: 'Bad request'})
+        .catch(next)
+    }
+    else {
+        return updateComment(inc_votes, comment_id)
+    .then((comment) => {
+        if (!comment) {
+            return Promise.reject({ status: 404, msg: 'Not found'})
+        }
+        res.status(200).send({comment})
+    })
+    .catch(next);
+    }
 };
