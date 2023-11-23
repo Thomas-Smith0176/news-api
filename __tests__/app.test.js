@@ -349,7 +349,6 @@ describe("DELETE /api/comments/:comment_id", () => {
   })
 });
 
-
 describe('GET /api/users/:username', () => {
   test('200: responds with a user object corresponding to the given username', () => {
     return request(app)
@@ -369,6 +368,67 @@ describe('GET /api/users/:username', () => {
     .expect(404)
     .then((response) => {
       expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
+
+describe('PATCH /api/comments/:comment_id', () => {
+  test('200: responds with a comment object with the votes propery updated', () => {
+    const votes = {inc_votes: 10}
+    return request(app)
+    .patch('/api/comments/1')
+    .send(votes)
+    .expect(200)
+    .then((response) => {
+      expect(response.body.comment).toMatchObject(
+        {
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 26,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: expect.any(String)
+        }
+      );
+    });
+  });
+  test("400: responds with Bad request when given an invalid comment_id", () => {
+    const votes = {inc_votes: 10}
+    return request(app)
+      .patch("/api/comments/banana")
+      .send(votes)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test('404: responds with not found when given a non existent comment_id', () => {
+    const votes = {inc_votes: 10}
+    return request(app)
+    .patch('/api/comments/9999')
+    .send(votes)
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+  test('400: responds with bad request when given an invalid or incomplete request body', () => {
+    const votes = { wrong_body: 'hello' }
+    return request(app)
+    .patch('/api/comments/1')
+    .send(votes)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+  test('400: responds with bad request when given a complete request body with a non integar value', () => {
+    const votes = { inc_votes: 'hello' }
+    return request(app)
+    .patch('/api/comments/1')
+    .send(votes)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
     });
   });
 });
