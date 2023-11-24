@@ -99,3 +99,17 @@ exports.insertArticle = (author, title, body, topic, article_img_url) => {
     });
 };
 
+exports.removeArticleById = (article_id) => {
+    return db.query(`
+    DELETE FROM comments 
+    WHERE article_id = $1
+    RETURNING *;`, [article_id]).then((response) => {
+    return db.query(`
+    DELETE FROM articles
+    WHERE article_id = $1
+    RETURNING *;`, [article_id])
+    })
+    .then((response) => {
+        return response.rows[0]
+    })
+};

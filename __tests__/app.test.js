@@ -18,6 +18,36 @@ beforeEach(() => {
   return seed({ articleData, commentData, topicData, userData });
 });
 
+describe("GET /api", () => {
+  test("200: responds with an object describing all the available endpoints on your API", () => {
+
+    const endpointsContents = require('../endpoints.json');
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then((response) => {
+          Object.keys(response.body.endpoints).forEach((endpoint) => {
+            expect(response.body.endpoints[endpoint]).toMatchObject({
+              description: expect.any(String),
+              queries: expect.any(Array),
+              exampleResponse: expect.any(Object),
+            });
+          });
+          expect(Object.keys(response.body.endpoints).length).toBe(
+            Object.keys(endpointsContents).length
+          );
+        });
+    });
+    test("404: reponds with Not found when given a non existent endpoint", () => {
+      return request(app)
+        .get("/api/nonExistentEndpoint")
+        .expect(404)
+        .then((response) => {
+          expect(response.body.msg).toBe("404: Not found");
+        });
+    });
+});
+
 describe("GET /api/topics", () => {
   test("200: responds with an array of topic objects", () => {
     return request(app)
@@ -88,36 +118,6 @@ describe("POST /api/topics", () => {
     });
   });
 });
-
-describe("GET /api", () => {
-  test("200: responds with an object describing all the available endpoints on your API", () => {
-
-    const endpointsContents = require('../endpoints.json');
-      return request(app)
-        .get("/api")
-        .expect(200)
-        .then((response) => {
-          Object.keys(response.body.endpoints).forEach((endpoint) => {
-            expect(response.body.endpoints[endpoint]).toMatchObject({
-              description: expect.any(String),
-              queries: expect.any(Array),
-              exampleResponse: expect.any(Object),
-            });
-          });
-          expect(Object.keys(response.body.endpoints).length).toBe(
-            Object.keys(endpointsContents).length
-          );
-        });
-    });
-    test("404: reponds with Not found when given a non existent endpoint", () => {
-      return request(app)
-        .get("/api/nonExistentEndpoint")
-        .expect(404)
-        .then((response) => {
-          expect(response.body.msg).toBe("404: Not found");
-        });
-    });
-  });
   
 describe("GET /api/articles", () => {
   test("200: responds with an array of article objects sorted in descending order by date", () => {
@@ -360,6 +360,22 @@ describe("GET /api/articles/:article_id", () => {
   })
 });
 
+describe("DELETE /api/articles/:article_id", () => {
+  test("204: responds with no content", () => {
+    return request(app)
+    .delete("/api/articles/1")
+    .expect(204)
+  });
+  test("404: responds with not found when given a non existent id", () => {
+    return request(app)
+    .delete('/api/articles/9999')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    })
+  })
+});
+
 describe("GET /api/articles/:article_id/comments", () => {
   test("200: responds with all comments for an article", () => {
     return request(app)
@@ -529,28 +545,6 @@ describe('GET /api/users/:username', () => {
   });
 });
 
-describe("DELETE /api/comments/:comment_id", () => {
-  test("204: responds with no content", () => {
-    return request(app).delete("/api/comments/1").expect(204);
-  });
-  test("400: responds with Bad request when given an invalid comment_id", () => {
-    return request(app)
-      .delete("/api/comments/banana")
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe("Bad request");
-      });
-  });
-  test("404: responds with not found when given an id for a non existent comment", () => {
-    return request(app)
-      .delete("/api/comments/9999")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe("Not found");
-      }); 
-  })
-});
-
 describe('PATCH /api/comments/:comment_id', () => {
   test('200: responds with a comment object with the votes propery updated', () => {
     const votes = {inc_votes: 10}
@@ -611,6 +605,37 @@ describe('PATCH /api/comments/:comment_id', () => {
     });
   });
 });
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: responds with no content", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+  test("400: responds with Bad request when given an invalid comment_id", () => {
+    return request(app)
+      .delete("/api/comments/banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+  test("400: responds with bad request when given an invalid article_id", () => {
+    return request(app)
+    .delete("/api/articles/hello")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+  test("404: responds with not found when given an id for a non existent comment", () => {
+    return request(app)
+      .delete("/api/comments/9999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not found");
+      }); 
+  })
+});
+
 
 ///////////////////testing utils requiring db access///////////////////////
 
