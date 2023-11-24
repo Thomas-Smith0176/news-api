@@ -1,4 +1,4 @@
-const { selectUsers, selectUserByUsername } = require("../models/users-models");
+const { selectUsers, selectUserByUsername } = require('../models/users-models');
 
 exports.getUsers = (req, res, next) => {
     return selectUsers()
@@ -12,7 +12,7 @@ exports.getUserByUsername = (req, res, next) => {
     return selectUserByUsername(username)
     .then((user) => {
         if(!user) {
-            return Promise.reject({status: 404, msg: 'Not found'})
+            return Promise.reject({status: 404, msg: "Not found"})
         }
         res.status(200).send({user})
     })

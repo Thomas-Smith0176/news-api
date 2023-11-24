@@ -1,5 +1,5 @@
-const { response } = require('../app');
-const db = require('../db/connection')
+const { response } = require("../app");
+const db = require("../db/connection")
 
 exports.selectTopics = () => {
     return db.query(`
@@ -10,8 +10,8 @@ exports.selectTopics = () => {
 };
 
 exports.insertTopic = (slug, description) => {
-    if (!slug || !description || typeof slug !== 'string' || typeof description !== 'string') {
-        return Promise.reject({status: 400, msg: 'Bad request'})
+    if (!slug || !description || typeof slug !== "string" || typeof description !== "string") {
+        return Promise.reject({status: 400, msg: "Bad request"})
     };
 
     return db.query(`

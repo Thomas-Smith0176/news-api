@@ -1,5 +1,5 @@
-const db = require('../db/connection');
-const format = require('pg-format')
+const db = require("../db/connection");
+const format = require("pg-format")
 
 exports.selectCommentsByArticleId = (articleId, limit = 10, p = 1) => {
     const offset = (p - 1) * limit

@@ -1,13 +1,13 @@
 const { response } = require("../app")
-const { selectArticles, updateArticle, insertArticle, removeArticleById } = require("../models/articles-models")
-const { selectArticleById } = require("../models/articles-models")
-const { totalEntries } = require("../utils")
+const { selectArticles, updateArticle, insertArticle, removeArticleById } = require('../models/articles-models')
+const { selectArticleById } = require('../models/articles-models')
+const { totalEntries } = require('../utils')
 
 exports.getArticles = (req, res, next ) => {
     const { author, topic, sort_by, order, limit, p } = req.query
     const promises = []
     promises.push(selectArticles(author, topic, sort_by, order, limit, p))
-    promises.push(totalEntries('articles'))
+    promises.push(totalEntries("articles"))
 
     Promise.all(promises)
     .then(([articles, total_count]) => {
@@ -29,7 +29,7 @@ exports.patchArticle = (req, res, next) => {
     const { article_id } = req.params
     const { inc_votes } = req.body
     if (!inc_votes) {
-        return Promise.reject({status: 400, msg: 'Bad request'})
+        return Promise.reject({status: 400, msg: "Bad request"})
         .catch(next)
     }
     else {
@@ -55,7 +55,7 @@ exports.deleteArticle = (req, res, next) => {
     return removeArticleById(article_id)
     .then((article) => {
         if (!article) {
-            return Promise.reject({status: 404, msg: 'Not found'})
+            return Promise.reject({status: 404, msg: "Not found"})
         }
         res.status(204).send()
     })

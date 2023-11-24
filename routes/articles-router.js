@@ -1,21 +1,21 @@
 const { getArticles, getArticle, patchArticle, postArticle, deleteArticle } = require('../controllers/articles-controllers');
 const { getComments, postComment } = require('../controllers/comments-controllers');
 
-const articlesRouter = require('express').Router();
+const articlesRouter = require("express").Router();
 
-articlesRouter.get('/', getArticles);
+articlesRouter.get("/", getArticles);
 
-articlesRouter.post('/', postArticle);
+articlesRouter.post("/", postArticle);
 
-articlesRouter.get('/:article_id', getArticle);
+articlesRouter.get("/:article_id", getArticle);
 
-articlesRouter.patch('/:article_id', patchArticle);
+articlesRouter.patch("/:article_id", patchArticle);
 
-articlesRouter.delete('/:article_id', deleteArticle);
+articlesRouter.delete("/:article_id", deleteArticle);
 
-articlesRouter.get('/:article_id/comments', getComments);
+articlesRouter.get("/:article_id/comments", getComments);
 
-articlesRouter.post('/:article_id/comments', postComment);
+articlesRouter.post("/:article_id/comments", postComment);
 
 
 
