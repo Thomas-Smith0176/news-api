@@ -2,13 +2,12 @@ const { checkTable } = require("../utils");
 const { selectCommentsByArticleId, removeComment, insertComment, updateComment } = require("../models/comments-models");
 
 exports.getComments = (req, res, next) => {
+    const { limit, p } = req.query
     const { article_id } = req.params 
-    const promises = [selectCommentsByArticleId(article_id)]
+    const promises = [selectCommentsByArticleId(article_id, limit, p)]
 
-    if (article_id) {
-        promises.push(checkTable("articles", "article_id", article_id))
-    }
-  
+    promises.push(checkTable("articles", "article_id", article_id))
+
     Promise.all(promises)
     .then((resolvedPromises) => {
         const comments = resolvedPromises[0]

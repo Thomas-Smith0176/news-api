@@ -1,12 +1,15 @@
 const db = require('../db/connection');
 const format = require('pg-format')
 
-exports.selectCommentsByArticleId = (articleId) => {
+exports.selectCommentsByArticleId = (articleId, limit = 10, p = 1) => {
+    const offset = (p - 1) * limit
+
     return db.query(`
     SELECT comment_id, votes, created_at, author, body, article_id 
     FROM comments
     WHERE comments.article_id = $1
-    ORDER BY created_at DESC;`, [articleId])
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3;`, [articleId, limit, offset])
     .then((response) => {
         return response.rows
     });
