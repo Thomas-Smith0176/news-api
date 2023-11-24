@@ -3,9 +3,9 @@ const { selectArticleById } = require("../models/articles-models")
 const { totalEntries } = require("../utils")
 
 exports.getArticles = (req, res, next ) => {
-    const { topic, sort_by, order, limit, p } = req.query
+    const { author, topic, sort_by, order, limit, p } = req.query
     const promises = []
-    promises.push(selectArticles(topic, sort_by, order, limit, p))
+    promises.push(selectArticles(author, topic, sort_by, order, limit, p))
     promises.push(totalEntries('articles'))
 
     Promise.all(promises)

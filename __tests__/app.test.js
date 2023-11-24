@@ -121,6 +121,40 @@ describe("GET api/articles (topic query)", () => {
   });
 });
 
+describe("GET api/articles (author query)", () => {
+  test("200: responds with an array of articles filtered by the given author", () => {
+    return request(app)
+    .get('/api/articles?author=rogersop')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.author).toBe('rogersop')
+      })
+      expect(response.body.articles.length).toBe(3)
+    });
+  });
+  test("200: responds with a filtered array when given multiple queries", () => {
+    return request(app)
+    .get('/api/articles?author=rogersop&&topic=mitch')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.author).toBe('rogersop')
+        expect(article.topic).toBe('mitch')
+      })
+      expect(response.body.articles.length).toBe(2)
+    });
+  });
+  test("404: responds with not found when given an invalid query", () => {
+    return request(app)
+    .get('/api/articles?author=1234')
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe('Not found')
+    });
+  });
+});
+
 describe("GET /api/articles (sort_by and order queries)", () => {
   test("200: responds with an array of articles sorted according to sort_by and order queries", () => {
     return request(app)
@@ -129,6 +163,19 @@ describe("GET /api/articles (sort_by and order queries)", () => {
     .then((response) => {
       expect(response.body.articles).toBeSortedBy('title', {descending: false})
     }); 
+  });
+  test("200: responds with a sorted and filtered array of articles when given multiple queries", () => {
+    return request(app)
+    .get('/api/articles?sort_by=title&&order=asc&&author=rogersop&&topic=mitch')
+    .expect(200)
+    .then((response) => {
+      response.body.articles.forEach((article) => {
+        expect(article.author).toBe('rogersop')
+        expect(article.topic).toBe('mitch')
+      });
+      expect(response.body.articles.length).toBe(2)
+      expect(response.body.articles).toBeSortedBy('title', {descending: false})
+    });
   });
   test("400: responds with bad request when passed an invalid sort_by or order query", () => {
     return request(app)

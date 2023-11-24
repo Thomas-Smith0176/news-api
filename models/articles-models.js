@@ -2,19 +2,30 @@
 const db = require('../db/connection')
 const format = require('pg-format')
 
-exports.selectArticles = (topic, sort_by = 'created_at', order = 'desc', limit = 10, p = 1) => {
+exports.selectArticles = (author, topic, sort_by = 'created_at', order = 'desc', limit = 10, p = 1) => {
     let queryString = ` 
     SELECT articles.author, title, articles.article_id, topic, articles.created_at, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INTEGER) AS comment_count 
     FROM articles 
     LEFT JOIN comments ON articles.article_id = comments.article_id`;
-    let queries = [];
     
-    if(topic) {
-        queries.push(topic);
-        queryString += `
-        WHERE topic = $1`;
-    };
+    let queries = [];
 
+    if(topic || author) {
+        queryString += `
+        WHERE `
+        queryArray = []
+        if(topic) {
+            queries.push(topic);
+            queryArray.push(`topic = $${queries.length}`);
+        };
+
+        if(author) {
+            queries.push(author);
+            queryArray.push(`articles.author = $${queries.length}`);
+        };
+        queryString += queryArray.join(' AND ')
+    };
+    
     const sortByQueries = ["title", "created_at", "author", "article_id"];
 
     if(sort_by && order) {
@@ -33,7 +44,7 @@ exports.selectArticles = (topic, sort_by = 'created_at', order = 'desc', limit =
     queries.push(offset);
     queryString += `
     LIMIT $${queries.length - 1} OFFSET $${queries.length}`;
-  
+
     return db.query(queryString, queries)
     .then((response) => {
         if (!response.rows[0]) {
