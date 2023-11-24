@@ -2,7 +2,6 @@ const request = require("supertest");
 const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
-const fs = require("fs/promises");
 const {
   articleData,
   commentData,
@@ -316,6 +315,27 @@ describe("GET /api/articles/:article_id/comments", () => {
   });
 });
 
+describe("GET /api/articles/:article_id/comments (pagination)", () => {
+  test("200: responds with an array of comments of length equal to the given limit, offset by the page number", () => {
+    return request(app)
+    .get("/api/articles/1/comments?limit=5&&p=1")
+    .expect(200)
+    .then((response) => {
+      expect(response.body.comments.length).toBe(5)
+      expect(response.body.comments[0].comment_id).toBe(5)
+      expect(response.body.comments[4].comment_id).toBe(7)
+    });
+  });
+  test("400: responds with bad request when provided an invalid limit or page query", () => {
+    return request(app)
+    .get("/api/articles/1/comments?limit=hello&&p=world")
+    .expect(400)
+    .then((respnse) => {
+      expect(respnse.body.msg).toBe('Bad request');
+    });
+  });
+})
+
 describe("POST /api/articles/:article_id/comments", () => {
   test("201: responds with a new posted comment", () => {
     const newComment = {
@@ -498,5 +518,23 @@ describe('PATCH /api/comments/:comment_id', () => {
     });
   });
 });
+
+///////////////////testing utils requiring db access///////////////////////
+
+describe("totalEntries", () => {
+  test("returns a number", () => {
+    return totalEntries('articles')
+    .then((response) =>
+    expect(typeof response).toBe('number')
+    );
+  });
+  test("returns the correct number of entries in the given table", () => {
+    return totalEntries('articles')
+    .then((response) =>
+    expect(response).toBe(13)
+    );
+  });
+});
+
 
 
