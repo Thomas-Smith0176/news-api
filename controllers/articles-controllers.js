@@ -1,4 +1,5 @@
-const { selectArticles, updateArticle, insertArticle } = require("../models/articles-models")
+const { response } = require("../app")
+const { selectArticles, updateArticle, insertArticle, removeArticleById } = require("../models/articles-models")
 const { selectArticleById } = require("../models/articles-models")
 const { totalEntries } = require("../utils")
 
@@ -49,3 +50,14 @@ exports.postArticle = (req, res, next) => {
     .catch(next)
 }
 
+exports.deleteArticle = (req, res, next) => {
+    const { article_id } = req.params
+    return removeArticleById(article_id)
+    .then((article) => {
+        if (!article) {
+            return Promise.reject({status: 404, msg: 'Not found'})
+        }
+        res.status(204).send()
+    })
+    .catch(next);
+};
