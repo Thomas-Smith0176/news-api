@@ -6,6 +6,14 @@
       "topics": [{ "slug": "football", "description": "Footie!" }]
     }
   },
+  "POST /api/topics": {
+    "description": "serves a topic object added to the database",
+    "queries": [],
+    "exampleResponse": {
+      "slug": "topic name here",
+      "description": "description here"
+    }
+  },
   "GET /api/articles/:article_id" : {
     "description": "serves a single article object",
     "queries": [],
