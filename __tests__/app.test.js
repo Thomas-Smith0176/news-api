@@ -43,6 +43,52 @@ describe("GET /api/topics", () => {
   });
 });
 
+describe("POST /api/topics", () => {
+  test("201: responds with a topic object added to the data base", () => {
+    const newTopic = {
+      slug: "topic name here",
+      description: "description here"
+    };
+    return request(app)
+    .post("/api/topics")
+    .send(newTopic)
+    .expect(201)
+    .then((response) => {
+      expect(response.body.topic).toMatchObject(
+        {
+          slug: "topic name here",
+          description: "description here"
+        }
+      );
+    });
+  });
+  test("400: responds with bad request when given an incomplete request body", () => {
+    const newTopic = {
+      slug: "topic name here",
+    };
+    return request(app)
+    .post("/api/topics")
+    .send(newTopic)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+  test("400: responds with bad request when given an invalid request body", () => {
+    const newTopic = {
+      slug: 1234,
+      description: 5678
+    };
+    return request(app)
+    .post("/api/topics")
+    .send(newTopic)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe('Bad request')
+    });
+  });
+});
+
 describe("GET /api", () => {
   test("200: responds with an object describing all the available endpoints on your API", () => {
 
