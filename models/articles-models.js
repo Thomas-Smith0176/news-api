@@ -26,7 +26,7 @@ exports.selectArticles = (author, topic, sort_by = "created_at", order = "desc",
         queryString += queryArray.join(" AND ")
     };
     
-    const sortByQueries = ["title", "created_at", "author", "article_id"];
+    const sortByQueries = ["title", "created_at", "author", "article_id", "comment_count"];
 
     if(sort_by && order) {
         if (sortByQueries.includes(sort_by) || order === "asc" || order === "desc") {
