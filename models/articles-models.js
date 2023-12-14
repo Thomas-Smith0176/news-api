@@ -29,15 +29,15 @@ exports.selectArticles = (author, topic, sort_by = "created_at", order = "desc",
     const sortByQueries = ["title", "created_at", "author", "votes", "article_id"];
 
     if(sort_by && order) {
-        if (sort_by !== "comment_count" && sortByQueries.includes(sort_by) || order === "asc" || order === "desc") {
-            queryString += `
-            GROUP BY articles.article_id
-            ORDER BY articles.${sort_by} ${order}`
-        }
-        else if (sort_by === "comment_count") {
+        if (sort_by === "comment_count" && (order === "asc" || order === "desc")) {
             queryString += `
             GROUP BY articles.article_id
             ORDER BY ${sort_by} ${order}`
+        }
+        else if (sortByQueries.includes(sort_by) && (order === "asc" || order === "desc")) {
+            queryString += `
+            GROUP BY articles.article_id
+            ORDER BY articles.${sort_by} ${order}`
         }
         else {
             return Promise.reject({status: 400, msg: "Bad request"})
