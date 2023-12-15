@@ -1,4 +1,4 @@
-# Tom's News API
+# News API
 
 This project creates an API which processes requests to a news server containing articles, comments, and user information. This is intended to mimic the behaviour of a real world back-end service for a site such as Reddit.
 
